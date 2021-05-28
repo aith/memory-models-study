@@ -5,20 +5,24 @@
 
 using namespace std;
 
+int num_threads = 8;
+
 bool compute_blur(int idx, double *input, double *output) {
-    output[idx] = (input[idx - 1] + input[idx] + input[idx + 1]) / 3;
+    for (int i = idx; i < SIZE; i+=num_threads) {
+        if(i == 0 || i == SIZE - 1) continue;
+        output[i] = (input[i - 1] + input[i] + input[i + 1]) / 3;
+    }
     return true;
 }
 
-void print_threads(int num_threads, double *output) {
-    for (int i = 0; i < num_threads; i++) {
+void print_threads(int size, double *output) {
+    for (int i = 0; i < size; i++) {
         cout << output[i] << " ";
     }
     cout << endl;
 }
 
 int main(int argc, char *argv[]) {
-    int num_threads = 8;
     if (argc > 1) {
         num_threads = atoi(argv[1]);
     }
@@ -34,24 +38,21 @@ int main(int argc, char *argv[]) {
     }
 
     auto time_start = std::chrono::high_resolution_clock::now();
-    int start = 1;
-    int end = num_threads - 1;
-    print_threads(num_threads, output);
     for (int r = 0; r < REPEATS; r++) {
         // Launch threads to compute the blur
-        for (int i = start; i < end; i++) { // don't blur boundaries
-            threads[i] = thread(compute_blur, i, input, output);
+        for (int ti = 0; ti < num_threads; ti++) {  // partition work into threads
+            threads[ti] = thread(compute_blur, ti, input, output);
         }
         // Join threads
-        for (int i = start; i < end; i++) {
-            threads[i].join();
+        for (int ti = 0; ti < num_threads; ti++) {
+            threads[ti].join();
         }
         // Swap input and output pointers.
         double *temp = output;
         output = input;
         input = temp;
     }
-    print_threads(num_threads, output);
+//    print_threads(SIZE, output);
 
     auto time_end = std::chrono::high_resolution_clock::now();
     auto time_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(time_end - time_start);

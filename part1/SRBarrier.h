@@ -1,4 +1,6 @@
+
 #include <atomic>
+#include <thread>
 
 using namespace std;
 
@@ -13,20 +15,19 @@ public:
         this->position = num_threads;
         this->barrier_sense.store(true);
         this->thread_sense.store(false);
-
+        this->thread_senses = new bool[num_threads];
     }
 
     void barrier(int tid) {
-        bool tsense = this->thread_sense.load();
-        int tpos = atomic_fetch_sub(&position,1);
-        if (tpos == 1) {
+        bool tsense = this->thread_senses[tid];
+        if (atomic_fetch_sub(&position, 1)) {
             this->position = this->num_threads.load();
             this->barrier_sense.store(tsense);
+        } else {
+            while (this->barrier_sense.load() != tsense) {
+            }
         }
-        else {
-            while(this->barrier_sense.load() != tsense);
-        }
-        this->thread_sense.store(!tsense);
+        this->thread_senses[tid] = !tsense;
     }
 
 private:
@@ -34,4 +35,5 @@ private:
     std::atomic_int position;
     std::atomic_bool barrier_sense;
     std::atomic_bool thread_sense;
+    bool *thread_senses;
 };

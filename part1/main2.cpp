@@ -15,13 +15,17 @@ barrier_object B;
 
 using namespace std;
 
+int num_threads = 8;
+
 bool compute_blur(int idx, double* input, double* output, barrier_object *B) {
     double *in = input;
     double *out = output;
     for (int i = 0; i < REPEATS; i++) {
-        out[idx] = (in[idx-1] + in[idx] + in[idx+1]) / 3;
+        for(int ti = idx; ti < SIZE - 1; ti+=num_threads ) { // partition work based on number of threads
+            if (ti == 0 || ti == SIZE-1) continue;
+            out[ti] = (in[ti - 1] + in[ti] + in[ti + 1]) / 3;
+        }
         B->barrier(idx);
-
         // flip
         auto temp = in;
         in = out;
@@ -32,15 +36,15 @@ bool compute_blur(int idx, double* input, double* output, barrier_object *B) {
     return true;
 }
 
-void print_threads(int num_threads, double *output) {
-    for (int i = 0; i < num_threads; i++) {
+void print_threads(int size, double *output) {
+    for (int i = 0; i < size; i++) {
         cout << output[i] << " ";
     }
     cout << endl;
 }
 
 int main(int argc, char *argv[]) {
-    int num_threads = 8;
+    num_threads = 8;
     if (argc > 1) {
         num_threads = atoi(argv[1]);
     }
@@ -61,15 +65,14 @@ int main(int argc, char *argv[]) {
     // Launch threads once
     int start = 1;
     int end = num_threads - 1;
-    print_threads(num_threads, output);
-    for (int i = start; i < end; i++) { // don't blur boundaries
+    for (int i = 0; i < num_threads; i++) { // don't blur boundaries
         threads[i] = thread(compute_blur, i, input, output, &B);
     }
     // Join threads once
     for (int i = start; i < end; i++) {
         threads[i].join();
     }
-    print_threads(num_threads, output);
+//    print_threads(SIZE, output);
     auto time_end = std::chrono::high_resolution_clock::now();
     auto time_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(time_end - time_start);
     double time_seconds = time_duration.count() / 1000000000.0;
