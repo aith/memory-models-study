@@ -20,7 +20,7 @@ public:
 
     void barrier(int tid) {
         bool tsense = this->thread_senses[tid];
-        if (atomic_fetch_sub(&position, 1)) {
+        if (atomic_fetch_sub(&position, 1) == 1) {
             this->position = this->num_threads.load();
             this->barrier_sense.store(tsense);
         } else {
@@ -29,6 +29,8 @@ public:
         }
         this->thread_senses[tid] = !tsense;
     }
+
+    
 
 private:
     std::atomic_int num_threads;

@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         output = input;
         input = temp;
     }
-//    print_threads(SIZE, output);
+    print_threads(SIZE, output);
 
     auto time_end = std::chrono::high_resolution_clock::now();
     auto time_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(time_end - time_start);

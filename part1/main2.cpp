@@ -18,21 +18,22 @@ using namespace std;
 int num_threads = 8;
 
 bool compute_blur(int idx, double* input, double* output, barrier_object *B) {
-    double *in = input;
-    double *out = output;
     for (int i = 0; i < REPEATS; i++) {
-        for(int ti = idx; ti < SIZE - 1; ti+=num_threads ) { // partition work based on number of threads
-            if (ti == 0 || ti == SIZE-1) continue;
-            out[ti] = (in[ti - 1] + in[ti] + in[ti + 1]) / 3;
+        for(int ti = idx; ti < SIZE; ti+=num_threads ) { // partition work based on number of threads
+            if (ti == 0 || ti == SIZE-1) {}
+            else output[ti] = (input[ti - 1] + input[ti] + input[ti + 1]) / 3;
         }
+
         B->barrier(idx);
         // flip
-        auto temp = in;
-        in = out;
-        out = temp;
+        auto temp = output;
+        output = input;
+        input = temp;
+        B->barrier(idx);
+//        B->barrier_swap_arrays(idx, input, output);
     }
-    input = in;
-    output = out;
+//    input = in;
+//    output = out;
     return true;
 }
 
@@ -44,7 +45,6 @@ void print_threads(int size, double *output) {
 }
 
 int main(int argc, char *argv[]) {
-    num_threads = 8;
     if (argc > 1) {
         num_threads = atoi(argv[1]);
     }
@@ -59,24 +59,20 @@ int main(int argc, char *argv[]) {
         output[i] = randval;
     }
 
-    B.init(num_threads-2);
+    B.init(num_threads);
     auto time_start = std::chrono::high_resolution_clock::now();
 
     // Launch threads once
-    int start = 1;
-    int end = num_threads - 1;
     for (int i = 0; i < num_threads; i++) { // don't blur boundaries
         threads[i] = thread(compute_blur, i, input, output, &B);
     }
     // Join threads once
-    for (int i = start; i < end; i++) {
+    for (int i = 0; i < num_threads; i++) {
         threads[i].join();
     }
-//    print_threads(SIZE, output);
+    print_threads(SIZE, output);
     auto time_end = std::chrono::high_resolution_clock::now();
     auto time_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(time_end - time_start);
     double time_seconds = time_duration.count() / 1000000000.0;
-
     std::cout << "timings: " << time_seconds << std::endl;
-
 }
