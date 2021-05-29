@@ -1,6 +1,6 @@
-
 #include <atomic>
 #include <thread>
+#include <array>
 
 using namespace std;
 
@@ -30,7 +30,6 @@ public:
         this->thread_senses[tid] = !tsense;
     }
 
-    
 
 private:
     std::atomic_int num_threads;
@@ -38,4 +37,4 @@ private:
     std::atomic_bool barrier_sense;
     std::atomic_bool thread_sense;
     bool *thread_senses;
-};
+};;

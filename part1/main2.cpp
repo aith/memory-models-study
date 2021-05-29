@@ -30,10 +30,7 @@ bool compute_blur(int idx, double* input, double* output, barrier_object *B) {
         output = input;
         input = temp;
         B->barrier(idx);
-//        B->barrier_swap_arrays(idx, input, output);
     }
-//    input = in;
-//    output = out;
     return true;
 }
 
@@ -70,7 +67,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < num_threads; i++) {
         threads[i].join();
     }
-    print_threads(SIZE, output);
+//    print_threads(SIZE, output);
     auto time_end = std::chrono::high_resolution_clock::now();
     auto time_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(time_end - time_start);
     double time_seconds = time_duration.count() / 1000000000.0;

@@ -21,7 +21,6 @@ void t1_function() {
     atomic_store_explicit(&var2, atomic_load_explicit(&x, memory_order_relaxed),memory_order_relaxed);
 }
 
-
 int main() {
 
     int output0 = 0;
@@ -43,15 +42,15 @@ int main() {
         b.join();
 
         // Record a histogram, fill in the conditions
-        if (x.load() == 1 && y.load() == 0) {
+        if (var1.load() == 1 && var2.load() == 0) {
             output0++;
-        } else if (x.load() == 0 && y.load() == 1) {
+        } else if (var1.load() == 0 && var2.load() == 1) {
             output1++;
-        } else if (x.load() == 1 && y.load() == 1) {
+        } else if (var1.load() == 1 && var2.load() == 1) {
             output2++;
         }
             // This should be the relaxed behavior
-        else if (x.load() == 0 && y.load() == 0) {
+        else if (var1.load() == 0 && var2.load() == 0) {
             output3++;
         }
 
