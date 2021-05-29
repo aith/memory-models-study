@@ -48,7 +48,7 @@ int main() {
   t0_thread.join();
   t1_thread.join();
 
-  std::cout << "throughput (critical sections per second): " << real_total/2.0 << endl;
+  std::cout << "throughput (critical sections per second): " << real_total/2.0 << std::endl;
   std::cout << "number of critical sections: " << real_total << std::endl;
   std::cout << "number of mutual exclusion violations: " << real_total - critical_section_total << std::endl;
   std::cout << "percent of times that mutual exclusion was violated: " << 100.0*(float(real_total-critical_section_total)/float(real_total)) << "%" << std::endl;
