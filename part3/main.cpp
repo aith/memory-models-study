@@ -36,8 +36,6 @@ void t1() {
   }
 }
 
-
-
 int main() {
 
   std::thread t0_thread = std::thread(t0);
